@@ -19,8 +19,9 @@ def composer(func=lambda x: x):
     >>> f3(3) # should be 1 + (2 * (3 + 1)) = 9
     9
     """
-    def func_adder(g):
+    def func_adder(f):
         "*** YOUR CODE HERE ***"
+        return composer(lambda x: func(f(x)))
     return func, func_adder
 
 
@@ -43,6 +44,9 @@ def g(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n <= 3:
+        return n
+    return g(n - 1) + 2 * g(n - 2) + 3 * g(n - 3)
 
 def g_iter(n):
     """Return the value of G(n), computed iteratively.
@@ -63,6 +67,17 @@ def g_iter(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n == 1:
+        return 1
+    if n == 2:
+        return 2
+    if n == 3:
+        return 3
+    a, b, c = 1, 2, 3
+    for i in range(n - 3):
+        a, b, c = b, c, 3 * a + 2 * b + c
+    return c
+
 
 
 def missing_digits(n):
@@ -93,6 +108,9 @@ def missing_digits(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n < 10:
+        return 0
+    return missing_digits(n // 10) + max(n % 10 - n // 10 % 10 - 1, 0)
 
 
 def count_change(total):
@@ -112,6 +130,15 @@ def count_change(total):
     True
     """
     "*** YOUR CODE HERE ***"
+    def calc(total, pre):
+        if total < 0:
+            return 0
+        if total == 0:
+            return 1
+        if total < 2 ** pre:
+            return 0
+        return calc(total, pre + 1) + calc(total - 2 ** pre, pre)
+    return calc(total, 0)
 
 
 def print_move(origin, destination):
@@ -147,6 +174,11 @@ def move_stack(n, start, end):
     """
     assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
     "*** YOUR CODE HERE ***"
+    if n == 0:
+        return
+    move_stack(n - 1, start, 6 - start - end)
+    print_move(start, end)
+    move_stack(n - 1, 6 - start - end, end)
 
 
 from operator import sub, mul
@@ -161,5 +193,6 @@ def make_anonymous_factorial():
     >>> check(HW_SOURCE_FILE, 'make_anonymous_factorial', ['Assign', 'AugAssign', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
+    return (lambda f: f(f))(lambda f: lambda n: 1 if n == 0 else mul(n, f(f)(n - 1)))
+    # return 'YOUR_EXPRESSION_HERE'
 
