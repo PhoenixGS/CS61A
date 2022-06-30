@@ -1,3 +1,6 @@
+from re import X
+
+
 this_file = __file__
 
 
@@ -17,6 +20,13 @@ def make_adder_inc(a):
     11
     """
     "*** YOUR CODE HERE ***"
+    t = 0
+    def adder(x):
+        nonlocal t
+        ans = a + x + t
+        t = t + 1
+        return ans
+    return adder
 
 
 def make_fib():
@@ -43,6 +53,14 @@ def make_fib():
     True
     """
     "*** YOUR CODE HERE ***"
+    x = 0
+    y = 1
+    def fib():
+        nonlocal x, y
+        ans = x
+        x, y = y, x + y
+        return ans
+    return fib
 
 
 def insert_items(lst, entry, elem):
@@ -62,4 +80,8 @@ def insert_items(lst, entry, elem):
     True
     """
     "*** YOUR CODE HERE ***"
+    for i in reversed(range(len(lst))):
+        if lst[i] == entry:
+            lst.insert(i + 1, elem)
+    return lst
 
