@@ -1,5 +1,6 @@
 """Typing test implementation"""
 
+from types import MethodWrapperType
 from utils import *
 from ucb import main, interact, trace
 from datetime import datetime
@@ -17,6 +18,13 @@ def choose(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    for i in paragraphs:
+        if select(i):
+            if k == 0:
+                return i
+            else:
+                k -= 1
+    return ''
     # END PROBLEM 1
 
 
@@ -33,6 +41,13 @@ def about(topic):
     assert all([lower(x) == x for x in topic]), 'topics should be lowercase.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def select(paragraph):
+        list = split(lower(remove_punctuation(paragraph)))
+        flag = False
+        for i in topic:
+            flag = flag or (i in list)
+        return flag
+    return select
     # END PROBLEM 2
 
 
@@ -57,6 +72,13 @@ def accuracy(typed, reference):
     reference_words = split(reference)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if not typed_words:
+        return 0.0
+    cnt = 0
+    for i in range(min(len(typed_words), len(reference_words))):
+        if typed_words[i] == reference_words[i]:
+            cnt += 1
+    return cnt / len(typed_words) * 100
     # END PROBLEM 3
 
 
@@ -65,6 +87,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return len(typed) / 5 / elapsed * 60
     # END PROBLEM 4
 
 
@@ -75,6 +98,13 @@ def autocorrect(user_word, valid_words, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    if user_word in valid_words:
+        return user_word
+    similar_word = min(valid_words, key = lambda w: diff_function(user_word, w, limit))
+    if diff_function(user_word, similar_word, limit) > limit:
+        return user_word
+    else:
+        return similar_word
     # END PROBLEM 5
 
 
@@ -84,30 +114,43 @@ def shifty_shifts(start, goal, limit):
     their lengths.
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    if start == "":
+        return len(goal)
+    if goal == "":
+        return len(start)
+    if limit == 0 and start != goal:
+        return 1
+    if start[0] == goal[0]:
+        return shifty_shifts(start[1:], goal[1:], limit)
+    else:
+        return shifty_shifts(start[1:], goal[1:], limit - 1) + 1
     # END PROBLEM 6
 
 
 def meowstake_matches(start, goal, limit):
     """A diff function that computes the edit distance from START to GOAL."""
-    assert False, 'Remove this line'
 
-    if ______________: # Fill in the condition
+
+    if limit < 0: # Fill in the condition
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return 0
         # END
 
-    elif ___________: # Feel free to remove or add additional cases
+    elif start == "" or goal == "": # Feel free to remove or add additional cases
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return len(start) + len(goal)
         # END
-
+    elif start[0] == goal[0]:
+        return meowstake_matches(start[1:], goal[1:], limit)
     else:
-        add_diff = ...  # Fill in these lines
-        remove_diff = ... 
-        substitute_diff = ... 
+        add_diff = meowstake_matches(start, goal[1:], limit - 1) + 1  # Fill in these lines
+        remove_diff = meowstake_matches(start[1:], goal, limit - 1) + 1
+        substitute_diff = meowstake_matches(start[1:], goal[1:], limit - 1) + 1
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return min(add_diff, remove_diff, substitute_diff)
         # END
 
 
@@ -125,6 +168,12 @@ def report_progress(typed, prompt, id, send):
     """Send a report of your id and progress so far to the multiplayer server."""
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    for i in range(len(typed)):
+        if typed[i] != prompt[i]:
+            send({'id': id, 'progress': i / len(prompt)})
+            return i / len(prompt)
+    send({'id': id, 'progress': len(typed) / len(prompt)})
+    return len(typed) / len(prompt)
     # END PROBLEM 8
 
 
@@ -151,6 +200,13 @@ def time_per_word(times_per_player, words):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    times = []
+    for i in range(len(times_per_player)):
+        times_player = []
+        for j in range(1, len(times_per_player[i])):
+            times_player.append(times_per_player[i][j] - times_per_player[i][j - 1])
+        times.append(times_player)
+    return game(words, times)
     # END PROBLEM 9
 
 
@@ -166,6 +222,16 @@ def fastest_words(game):
     words = range(len(all_words(game)))    # An index for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    ans = []
+    for i in players:
+        ans.append([])
+    for i in words:
+        k = 0
+        for j in players:
+            if time(game, j, i) < time(game, k, i):
+                k = j
+        ans[k].append(word_at(game, i))
+    return ans
     # END PROBLEM 10
 
 
@@ -221,6 +287,18 @@ def key_distance_diff(start, goal, limit):
 
     # BEGIN PROBLEM EC1
     "*** YOUR CODE HERE ***"
+    f = memo(key_distance_diff)
+    if limit < 0:
+        return float("inf")
+    elif start == "" or goal == "":
+        return len(start) + len(goal)
+    elif start[0] == goal[0]:
+        return f(start[1:], goal[1:], limit)
+    else:
+        add_diff = f(start, goal[1:], limit - 1) + 1
+        remove_diff = f(start[1:], goal, limit - 1) + 1
+        substitute_diff = f(start[1:], goal[1:], limit - 1) + key_distance[start[0], goal[0]]
+        return min(add_diff, remove_diff, substitute_diff)
     # END PROBLEM EC1
 
 def memo(f):
@@ -241,6 +319,13 @@ def faster_autocorrect(user_word, valid_words, diff_function, limit):
 
     # BEGIN PROBLEM EC2
     "*** YOUR CODE HERE ***"
+    if user_word in valid_words:
+        return user_word
+    similar_word = min(valid_words, key = lambda w: diff_function(user_word, w, limit))
+    if diff_function(user_word, similar_word, limit) > limit:
+        return user_word
+    else:
+        return similar_word
     # END PROBLEM EC2
 
 
